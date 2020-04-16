@@ -519,15 +519,9 @@ full_emp.df %>%
 #We will move forward with following for consideration (categorical)
 #Business Travel, Distance from Home, Marital Status, Overtime, Stock Option, Job Role, Work life balance
 
-
+```{r}
 ##Filter out our final data frame with 15 predictor variables
-final.df <- full_emp.df[c("ID","Age","MonthlyIncome","Attrition","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
-
-##Filter for kNN
-original.df <- emp.no_attrition[c("ID","Age","MonthlyIncome","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
-
-#Filter for NB
-original2.df <- emp.no_attrition[c("ID","Age","MonthlyIncome","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
+final.df <- full_emp.df[c("Age","MonthlyIncome","Attrition","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
 
 ## Relationship between Attrition and Monthly Income?
 #Box plot for normality and equal sd
@@ -544,8 +538,10 @@ final.df %>%
   ggplot(aes(x=MonthlyIncome))+
   geom_histogram(fill = "green", col = "red")+
   facet_wrap(~Attrition)+
-  ggtitle("Histogram Distribution of Monthly Income by Attrition)
+  ggtitle("Histogram Distribution of Monthly Income by Attrition")
+```
 
+```{r}
 #We would like to test if the group means are different by Attrition Group
 #Create 2 separate groups for Yes and No
 Income_Yes <- final.df$MonthlyIncome[final.df$Attrition == "Yes"]
@@ -564,9 +560,10 @@ qqnorm(Income_No, main = "QQplot for No Attrition")
 hist(Income_Yes, xlab = "Monthly Income", main = " Histogram Distribution of Monthly Income for Attrition")
 hist(Income_No, xlab = "Monthly Income", main = " Histogram Distribution of Monthly Income for No Attrition")
 
-##Boxplot Dist
-boxplot(Income_Yes, xlab = "Yes", ylab = "Monthly Income", main = "BoxPlot Distribution of Monthly Income for Attrition")
-boxplot(Income_No, xlab = "No", ylab = "Monthly Income", main = "BoxPlot Distribution of Monthly Income for No Attrition")
+#Monthly Income vs Attrition
+par(mfrow=c(1,2))
+boxplot(Income_Yes, col = "red", xlab = "Yes", ylab = "Monthly Income", main = "BoxPlot of Monthly Income")
+boxplot(Income_No, col = "blue", xlab = "No", ylab = "Monthly Income", main = "BoxPlot of Monthly Income")
 
 #Means
 #Yes = 4764, No = 6702
@@ -582,6 +579,9 @@ sd(Income_No)
 t.test(log(Income_No), log(Income_Yes), alternative = "two.sided", conf.level = 0.95, var.equal = F)
 
 #There is enough evidence to suggest that the montly income group means are different for group No vs Yes (p-value = <0.00001). The estimated group means for No vs Yes groups are 5404 and 3751 respectively. We can move forward with the assumption that No attrition group has a higher monthy salary than Yes attrition groups
+```
+
+## KNN PREDICTIONS
 ```{r}
 ### KNN and Naive Bayes for Attrition Prediction
 ##Split into Attrition and Salary DF's
@@ -590,82 +590,41 @@ attrition.df = final.df %>% filter(!is.na(Attrition))
 salary.df = final.df %>% filter(!is.na(MonthlyIncome))
 
 #Filter out ID column as it will be unnecessary for prediction
-attrition2.df = subset(attrition.df, select = -ID)
-attrition2.df = attrition2.df[!is.na(attrition2.df$MonthlyIncome),]
+attrition.df = attrition.df[!is.na(attrition.df$MonthlyIncome),]
 
 #Change some categorical to numerical
-attrition2.df$JobRole = as.integer(attrition2.df$JobRole)
-attrition2.df$OverTime = as.integer(attrition2.df$OverTime)
-attrition2.df$MaritalStatus = as.integer(attrition2.df$MaritalStatus)
-attrition2.df$LogMI = log(attrition2.df$MonthlyIncome)
-attrition2.df$StockOptionLevel = as.integer(attrition2.df$StockOptionLevel)
+attrition.df$JobRole = as.integer(attrition.df$JobRole)
+attrition.df$OverTime = as.integer(attrition.df$OverTime)
+attrition.df$MaritalStatus = as.integer(attrition.df$MaritalStatus)
+attrition.df$LogMI = log(attrition.df$MonthlyIncome)
+attrition.df$StockOptionLevel = as.integer(attrition.df$StockOptionLevel)
 
-original.df$JobRole = as.integer(original.df$JobRole)
-original.df$OverTime = as.integer(original.df$OverTime)
-original.df$MaritalStatus = as.integer(original.df$MaritalStatus)
-original.df$StockOptionLevel = as.integer(original.df$StockOptionLevel)
 #Split attrition df into training and test sets for kNN model
 #75/25
-trainIndices = sample(1:dim(attrition2.df)[1],round(0.75 * dim(attrition2.df)[1]))
-train = attrition2.df[trainIndices,]
-test = attrition2.df[-trainIndices,]
+trainIndices = sample(1:dim(attrition.df)[1],round(0.75 * dim(attrition.df)[1]))
+train = attrition.df[trainIndices,]
+test = attrition.df[-trainIndices,]
 
 #Classifciations
 #Monthly Income, Job Role, Marital Status, Over Time, Stock Option Level
 classifications = knn(scale(train[,c(2,7,8,9,10)]),scale(test[,c(2,7,8,9,10)]),train$Attrition, prob = TRUE, k = 3)
 CM = confusionMatrix(table(classifications,test$Attrition))
 CM
-knn(scale(train[,c(2,7,8,9,10)]),emp.no_attrition,train$Attrition, prob = TRUE, k = 3)
 ```
 
 ## KNN and NB Prediction Testing
 ```{r}
-#Split attrition df into training and test sets for kNN model
-#75/25
-trainIndices = sample(1:dim(attrition2.df)[1],round(0.75 * dim(attrition2.df)[1]))
-train = attrition2.df[trainIndices,]
-test = attrition2.df[-trainIndices,]
-
-#Classifciations
-#Monthly Income, Job Role, Marital Status, Over Time, Stock Option Level
-classifications = knn(scale(train[,c(2,7,8,9,10)]),scale(original.df[,c(3,8,9,10,11)]),train$Attrition, prob = TRUE, k = 3)
-
-CM = confusionMatrix(table(classifications,original.df$Attrition))
-CM
-
-#Add kNN Classification
-original.df <- cbind(original.df,classifications)
-
 #BAYES
 modelBayes = naiveBayes(Attrition~., data = final.df)
 result = predict(modelBayes, final.df)
 CM_Bayes = confusionMatrix(table(result,final.df$Attrition))
 CM_Bayes
-
-#BAYES
-modelBayes = naiveBayes(Attrition~., data = final.df)
-result = predict(modelBayes, original2.df)
-CM_Bayes = confusionMatrix(table(result,original2.df$Attrition))
-CM_Bayes
-
-#Add NB Classification
-original.df <- cbind(original.df,result)
-
-#Combine both preditions and clean the rest of the frame for submission purposes
-names(original.df)[16] = "KNNPred"
-names(original.df)[17] = "NBPred"
-
-#Remove Columns outside of ID
-original.df <- subset(original.df, select = -c(2,3,4,5,6,7,8,9,10,11,12,13,14,15))
-original.df <- subset(original.df, select = -c(17,18,19))
 ```
 
-#Export CSV
-write.csv(original.df,"/Users/auriang/Documents/SMU_Data_Science/SMUGIT/CASE2GIT/DDS6306_Case_Study2/Predictions/Case2PredictionsGhaemmaghami_Attrition.csv")
 
 ```{r}
 ## Monthly Income Predictions
-salary.df <- subset(salary.df, select = -c(Attrition,ID))
+salary.df <- subset(salary.df, select = -c(Attrition))
 
 ## Create fit with original predictors
 #Significant variables we found are JobLevel, Job Role HR/LabTech/Mgr/ManDir/RDire/RScien/SalesRep, Totalworknyears, yearssincelastpromo
@@ -714,8 +673,7 @@ names(emp.no_salary2)[2] = "FullModelPredict"
 names(emp.no_salary2)[3] = "ReducedModelPredict"
 ```
 
-#Export CSV
-write.csv(emp.no_salary2,"/Users/auriang/Documents/SMU_Data_Science/SMUGIT/CASE2GIT/DDS6306_Case_Study2/Predictions/Case2PredictionsGhaemmaghami_Salary.csv")
+
 
 
 
