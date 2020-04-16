@@ -518,8 +518,16 @@ full_emp.df %>%
 #Monthly Income, Age, Total Working Years, Years at Company, Job Level, Years since last promotion, Year in Current Role
 #We will move forward with following for consideration (categorical)
 #Business Travel, Distance from Home, Marital Status, Overtime, Stock Option, Job Role, Work life balance
+
+
 ##Filter out our final data frame with 15 predictor variables
 final.df <- full_emp.df[c("ID","Age","MonthlyIncome","Attrition","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
+
+##Filter for kNN
+original.df <- emp.no_attrition[c("ID","Age","MonthlyIncome","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
+
+#Filter for NB
+original2.df <- emp.no_attrition[c("ID","Age","MonthlyIncome","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
 
 ## Relationship between Attrition and Monthly Income?
 #Box plot for normality and equal sd
@@ -574,7 +582,7 @@ sd(Income_No)
 t.test(log(Income_No), log(Income_Yes), alternative = "two.sided", conf.level = 0.95, var.equal = F)
 
 #There is enough evidence to suggest that the montly income group means are different for group No vs Yes (p-value = <0.00001). The estimated group means for No vs Yes groups are 5404 and 3751 respectively. We can move forward with the assumption that No attrition group has a higher monthy salary than Yes attrition groups
-
+```{r}
 ### KNN and Naive Bayes for Attrition Prediction
 ##Split into Attrition and Salary DF's
 #Both should contain 1170 obs and 15 variables
@@ -590,7 +598,12 @@ attrition2.df$JobRole = as.integer(attrition2.df$JobRole)
 attrition2.df$OverTime = as.integer(attrition2.df$OverTime)
 attrition2.df$MaritalStatus = as.integer(attrition2.df$MaritalStatus)
 attrition2.df$LogMI = log(attrition2.df$MonthlyIncome)
+attrition2.df$StockOptionLevel = as.integer(attrition2.df$StockOptionLevel)
 
+original.df$JobRole = as.integer(original.df$JobRole)
+original.df$OverTime = as.integer(original.df$OverTime)
+original.df$MaritalStatus = as.integer(original.df$MaritalStatus)
+original.df$StockOptionLevel = as.integer(original.df$StockOptionLevel)
 #Split attrition df into training and test sets for kNN model
 #75/25
 trainIndices = sample(1:dim(attrition2.df)[1],round(0.75 * dim(attrition2.df)[1]))
@@ -602,14 +615,107 @@ test = attrition2.df[-trainIndices,]
 classifications = knn(scale(train[,c(2,7,8,9,10)]),scale(test[,c(2,7,8,9,10)]),train$Attrition, prob = TRUE, k = 3)
 CM = confusionMatrix(table(classifications,test$Attrition))
 CM
-
 knn(scale(train[,c(2,7,8,9,10)]),emp.no_attrition,train$Attrition, prob = TRUE, k = 3)
+```
+
+## KNN and NB Prediction Testing
+```{r}
+#Split attrition df into training and test sets for kNN model
+#75/25
+trainIndices = sample(1:dim(attrition2.df)[1],round(0.75 * dim(attrition2.df)[1]))
+train = attrition2.df[trainIndices,]
+test = attrition2.df[-trainIndices,]
+
+#Classifciations
+#Monthly Income, Job Role, Marital Status, Over Time, Stock Option Level
+classifications = knn(scale(train[,c(2,7,8,9,10)]),scale(original.df[,c(3,8,9,10,11)]),train$Attrition, prob = TRUE, k = 3)
+
+CM = confusionMatrix(table(classifications,original.df$Attrition))
+CM
+
+#Add kNN Classification
+original.df <- cbind(original.df,classifications)
+
+#BAYES
+modelBayes = naiveBayes(Attrition~., data = final.df)
+result = predict(modelBayes, final.df)
+CM_Bayes = confusionMatrix(table(result,final.df$Attrition))
+CM_Bayes
+
+#BAYES
+modelBayes = naiveBayes(Attrition~., data = final.df)
+result = predict(modelBayes, original2.df)
+CM_Bayes = confusionMatrix(table(result,original2.df$Attrition))
+CM_Bayes
+
+#Add NB Classification
+original.df <- cbind(original.df,result)
+
+#Combine both preditions and clean the rest of the frame for submission purposes
+names(original.df)[16] = "KNNPred"
+names(original.df)[17] = "NBPred"
+
+#Remove Columns outside of ID
+original.df <- subset(original.df, select = -c(2,3,4,5,6,7,8,9,10,11,12,13,14,15))
+original.df <- subset(original.df, select = -c(17,18,19))
+```
+
+#Export CSV
+write.csv(original.df,"/Users/auriang/Documents/SMU_Data_Science/SMUGIT/CASE2GIT/DDS6306_Case_Study2/Predictions/Case2PredictionsGhaemmaghami_Attrition.csv")
+
+```{r}
+## Monthly Income Predictions
+salary.df <- subset(salary.df, select = -c(Attrition,ID))
+
+## Create fit with original predictors
+#Significant variables we found are JobLevel, Job Role HR/LabTech/Mgr/ManDir/RDire/RScien/SalesRep, Totalworknyears, yearssincelastpromo
+#R^2 = 0.9477, Adjusted R^2 = 0.9465
+fit = lm(MonthlyIncome~., data = salary.df)
+summary(fit)
+
+#MSE
+mse = mean(residuals(fit)^2)
+mse
+
+#RMSE = 1096.229
+RMSE = sqrt(mse)
+RMSE
+
+##fit2 with selected variables (Reduced Model)
+#R^2 = 0.9467, Ajusted R^2 = 0.9462
+fit2 = lm(MonthlyIncome~JobLevel+JobRole+TotalWorkingYears+YearsSinceLastPromotion, data = salary.df)
+summary(fit2)
+
+#MSE
+mse = mean(residuals(fit2)^2)
+mse
+
+#RMSE = 1107
+RMSE = sqrt(mse)
+RMSE
+```
+
+##We will proceed with Model 1 (Full Model)
+```{r}
+#Recode factor levels
+clean_salary.df = emp.no_salary[c("Age","BusinessTravel","DistanceFromHome","JobLevel","JobRole","MaritalStatus","OverTime","StockOptionLevel","TotalWorkingYears","WorkLifeBalance","YearsAtCompany","YearsSinceLastPromotion","YearsInCurrentRole")]
+clean_salary.df$DistanceFromHome = cut(clean_salary.df$DistanceFromHome, breaks = c(0,8,15,30), labels = c("Low","Medium","High"))
+clean_salary.df$StockOptionLevel = as.factor(clean_salary.df$StockOptionLevel)
+clean_salary.df$WorkLifeBalance = as.factor(clean_salary.df$WorkLifeBalance)
+
+#Get predictions
+lmpredict = predict(fit,clean_salary.df)
+lmpredict2 = predict(fit2,clean_salary.df)
+
+#Append predictions
+emp.no_salary2 = emp.no_salary["ID"]
+emp.no_salary2 = cbind(emp.no_salary2,lmpredict,lmpredict2)
+names(emp.no_salary2)[2] = "FullModelPredict"
+names(emp.no_salary2)[3] = "ReducedModelPredict"
+```
+
+#Export CSV
+write.csv(emp.no_salary2,"/Users/auriang/Documents/SMU_Data_Science/SMUGIT/CASE2GIT/DDS6306_Case_Study2/Predictions/Case2PredictionsGhaemmaghami_Salary.csv")
 
 
-
-
-
-
-str(attrition2.df)
-gg_miss_var
 
