@@ -14,7 +14,10 @@ DDSAnalytics is an analytics company that specializes in talent management solut
 #This Repo is used for our PPT presentation slide deck
 
 ##Data Repo  
-#This Repo contains the three data sets we used for analysis and prediction
+#This Repo contains the three data sets we used for analysis and prediction  
+
+##Prediction Repo  
+#This Repo contains the 300 observation predictions via "ID" tested against our models
 
 ##VARIABLES  
 'data.frame':	1470 obs. of  36 variables:  
