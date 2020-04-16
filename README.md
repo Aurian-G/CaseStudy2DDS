@@ -4,17 +4,17 @@ Description:
   
 DDSAnalytics is an analytics company that specializes in talent management solutions for Fortune 100 companies. Talent management is defined as the iterative process of developing and retaining employees. It may include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). To gain a competitive edge over its competition, DDSAnalytics is planning to leverage data science for talent management. The executive leadership has identified predicting employee turnover as its first application of data science for talent management. Before the business green lights the project, they have tasked your data science team to conduct an analysis of existing employee data. You have been given a dataset (CaseStudy2-data.csv) to do a data analysis to identify factors that lead to attrition.  
 
-###RMarkdown Repo  
-#This Repo has our R Markdown file for all analysis and findings
+###Code Repo  
+#This Repo has our R Markdown file for all analysis and findings  
+
+##Data Repo  
+#This Repo contains the three data sets we used for analysis and prediction
 
 ##KNIT REPO  
 #This Repo is used to display our plots and tables in a presentation related format
 
 ##PPT REPO  
 #This Repo is used for our PPT presentation slide deck
-
-##Data Repo  
-#This Repo contains the three data sets we used for analysis and prediction  
 
 ##Prediction Repo  
 #This Repo contains the 300 observation predictions via "ID" tested against our models
