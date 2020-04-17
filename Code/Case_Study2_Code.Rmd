@@ -1,12 +1,17 @@
 ---
 title: "DDS_Case_Study_2"
 author: "Aurian Ghaemmaghami"
-date: "4/14/2020"
+date: "4/09/2020"
 output: html_document
 ---
 
 ## Introduction and Summary
-#DDS Analytics is tasked with analyzing and finding factors that influence attrition (employee turnover) and monthly income. Our goal is to identify top influential factors that are correlated with attrition to help better serve our client, Frito Lay, on achieving their talent management based needs. In addition, predictive modeling and visualizations will be leveraged heavily on achieving our goals.
+#DDS Analytics is tasked with analyzing and finding factors that influence
+#attrition (employee turnover) and monthly income. Our goal is to identify top
+#influential factors that are correlated with attrition to help better serve
+#our client, Frito Lay, on achieving their talent management based needs. In
+#addition, predictive modeling and visualizations will be leveraged heavily on
+#achieving our goals.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -24,10 +29,6 @@ library(naniar)
 library(gridExtra)
 ```
 
-## Introduction
-#Hello my name is Aurian Ghaemmaghami with DDS Analytics. My team and I will be going over
-#our findings and insights through our predictive models to identify top factors that lead to
-#employee attrition and insights on employee salaries and their corresponding factors
 
 ```{r echo = FALSE}
 #Read in all employee data sets
@@ -675,9 +676,17 @@ names(emp.no_salary2)[2] = "FullModelPredict"
 names(emp.no_salary2)[3] = "ReducedModelPredict"
 ```
 
-##Youtube Link
-#Aurian Ghaemmaghami - https://www.youtube.com/watch?v=QDbT4d7CVFk&t=14s
+## Conclusion
+#Job Roles of Sales Reps are more likely to leave. May benefit from less overtime and incentivized stock option plans.
+#Job Roles of Managers/Directors seem to have highest retention
+#Those who are single disproportionately are more likely to leave. Most of those who are single fall into sales rep. category. 
+#Longer commutes from home lead to higher attrition. Partial remote opportunity may be beneficial
+#Those who travel less tend to stay. Flexibility plans for those who travel frequently and have a family
 
+
+
+## Youtube Link
+#Aurian Ghaemmaghami - https://www.youtube.com/watch?v=QDbT4d7CVFk&t=14s
 
 
 
