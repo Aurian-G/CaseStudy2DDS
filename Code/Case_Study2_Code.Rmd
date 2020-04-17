@@ -5,7 +5,7 @@ date: "4/09/2020"
 output: html_document
 ---
 
-## Introduction and Summary
+## Summary and Introduction
 #DDS Analytics is tasked with analyzing and finding factors that influence
 #attrition (employee turnover) and monthly income. Our goal is to identify top
 #influential factors that are correlated with attrition to help better serve
