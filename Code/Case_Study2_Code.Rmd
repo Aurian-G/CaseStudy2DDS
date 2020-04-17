@@ -5,6 +5,8 @@ date: "4/14/2020"
 output: html_document
 ---
 
+## Introduction and Summary
+#DDS Analytics is tasked with analyzing and finding factors that influence attrition (employee turnover) and monthly income. Our goal is to identify top influential factors that are correlated with attrition to help better serve our client, Frito Lay, on achieving their talent management based needs. In addition, predictive modeling and visualizations will be leveraged heavily on achieving our goals.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -673,6 +675,8 @@ names(emp.no_salary2)[2] = "FullModelPredict"
 names(emp.no_salary2)[3] = "ReducedModelPredict"
 ```
 
+##Youtube Link
+#Aurian Ghaemmaghami - https://www.youtube.com/watch?v=QDbT4d7CVFk&t=14s
 
 
 
